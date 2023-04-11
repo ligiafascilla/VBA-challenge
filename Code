@@ -1,0 +1,101 @@
+Sub StockAnalysis()
+
+ Dim ws As Worksheet
+ For Each ws In ThisWorkbook.Worksheets
+ 
+ ws.Activate
+
+  
+    Dim lastRow As Long
+    Dim tickerCol As String
+    Dim openCol As Double
+    Dim closingCol As Double
+    Dim yearlychangeCol As Double
+    Dim percentchangeCol As Double
+    Dim totalvolumeCol As Double
+    Dim summaryTableRowIndex As Long
+    
+    summaryTableRowIndex = 2
+    
+    lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    
+    For i = 2 To lastRow
+        If ws.Cells(i, 1).Value <> ws.Cells(i - 1, 1).Value Then
+            tickerCol = ws.Cells(i, 1).Value
+            openCol = ws.Cells(i, 3).Value
+            totalvolumeCol = 0
+        End If
+        
+        closingCol = ws.Cells(i, 6).Value
+        totalvolumeCol = totalvolumeCol + ws.Cells(i, 7).Value
+  
+        If ws.Cells(i, 2).Value Like "****1231" Then
+        
+            yearlychangeCol = closingCol - openCol
+            If openCol <> 0 Then
+                percentchangeCol = yearlychangeCol / openCol
+            Else
+                percentchangeCol = 0
+            End If
+            
+            ws.Range("I1").Value = "Ticker"
+            ws.Range("J1").Value = "Yearly Change"
+            ws.Range("K1").Value = "Percent Change"
+            ws.Range("L1").Value = "Total Volume"
+            
+            ws.Range("I" & summaryTableRowIndex).Value = tickerCol
+            ws.Range("J" & summaryTableRowIndex).Value = yearlychangeCol
+            ws.Range("K" & summaryTableRowIndex).Value = percentchangeCol
+            ws.Range("L" & summaryTableRowIndex).Value = totalvolumeCol
+            
+            ws.Range("K" & summaryTableRowIndex).NumberFormat = "0.00%"
+            
+            If yearlychangeCol > 0 Then
+                ws.Range("J" & summaryTableRowIndex).Interior.ColorIndex = 4
+            Else
+                ws.Range("J" & summaryTableRowIndex).Interior.ColorIndex = 3
+            End If
+            
+            summaryTableRowIndex = summaryTableRowIndex + 1
+            
+        End If
+    Next i
+ 
+     Dim maxPctIncrease As Double
+     Dim maxPctIncreaseTicker As String
+        maxPctIncrease = WorksheetFunction.Max(ws.Range("K2:K" & lastRow))
+        maxPctIncreaseTicker = Application.WorksheetFunction.Match(WorksheetFunction.Max(ws.Range("K2:K" & lastRow)), ws.Range("K2:K" & lastRow), 0)
+        
+    
+     Dim maxPctDecrease As Double
+     Dim maxPctDecreaseTicker As String
+        maxPctDecrease = WorksheetFunction.Min(ws.Range("K2:K" & lastRow))
+        maxPctDecreaseTicker = Application.WorksheetFunction.Match(maxPctDecrease, ws.Range("K2:K" & lastRow), 0)
+    
+    Dim maxVolume As Double
+    Dim maxVolumeTicker As String
+        maxVolume = WorksheetFunction.Max(ws.Range("L2:L" & lastRow))
+        maxVolumeTicker = Application.WorksheetFunction.Match(maxVolume, ws.Range("L2:L" & lastRow), 0)
+    
+    
+    ws.Range("O1").Value = "Ticker"
+    ws.Range("P1").Value = "Value"
+
+    
+    ws.Range("N2").Value = "Stock with highest percentage increase"
+    ws.Range("O2").Value = ws.Cells(maxPctIncreaseTicker + 1, "I")
+    ws.Range("P2").Value = FormatPercent(maxPctIncrease, 2)
+    
+    ws.Range("N3").Value = "Stock with lowest percentage decrease"
+    ws.Range("O3").Value = ws.Cells(maxPctDecreaseTicker + 1, "I")
+    ws.Range("P3").Value = FormatPercent(maxPctDecrease, 2)
+    
+    ws.Range("N4").Value = "Stock with greatest total volume"
+    ws.Range("O4").Value = ws.Cells(maxVolumeTicker + 1, "I")
+    ws.Range("P4").Value = maxVolume
+    
+       Next ws
+    
+End Sub
+
+
